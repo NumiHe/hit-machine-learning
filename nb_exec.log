@@ -1,0 +1,10 @@
+[NbConvertApp] Converting notebook job_fraud_model.ipynb to notebook
+C:\Users\matan\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\zmq\_future.py:718: RuntimeWarning: Proactor event loop does not implement add_reader family of methods required for zmq. Registering an additional selector thread for add_reader support via tornado. Use `asyncio.set_event_loop_policy(WindowsSelectorEventLoopPolicy())` to avoid this warning.
+  self._get_loop()
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+Traceback (most recent call last):
+  File [35m"C:\Users\matan\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\joblib\externals\loky\backend\resource_tracker.py"[0m, line [35m386[0m, in [35mmain[0m
+    del [31mcache[rtype][0m[1;31m[name][0m
+        [31m~~~~~~~~~~~~[0m[1;31m^^^^^^[0m
+[1;35mKeyError[0m: [35m'C:\\Users\\matan\\AppData\\Local\\Temp\\joblib_memmapping_folder_6204_e762c56c370946fab658970c8aed3adb_8ef8f50d257e4c148b5adf6ba595c8ac'[0m
+[NbConvertApp] Writing 61495 bytes to job_fraud_model.ipynb
