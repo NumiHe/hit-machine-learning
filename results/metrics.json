@@ -1,0 +1,51 @@
+{
+  "models": [
+    {
+      "model": "LogisticRegression",
+      "precision_fraudulent": 0.9132947976878613,
+      "recall_fraudulent": 0.9132947976878613,
+      "f1_fraudulent": 0.9132947976878613,
+      "roc_auc": 0.993992040345224,
+      "pr_auc": 0.9668000798028212,
+      "confusion_matrix": [
+        [
+          3388,
+          15
+        ],
+        [
+          15,
+          158
+        ]
+      ],
+      "best_params": {
+        "clf__C": "100",
+        "clf__class_weight": "balanced"
+      },
+      "best_cv_f1": 0.8570938888080096
+    },
+    {
+      "model": "RandomForest",
+      "precision_fraudulent": 1.0,
+      "recall_fraudulent": 0.6647398843930635,
+      "f1_fraudulent": 0.7986111111111112,
+      "roc_auc": 0.9952048430575539,
+      "pr_auc": 0.9526743098819013,
+      "confusion_matrix": [
+        [
+          3403,
+          0
+        ],
+        [
+          58,
+          115
+        ]
+      ],
+      "best_params": {
+        "clf__max_depth": "None",
+        "clf__n_estimators": "500"
+      },
+      "best_cv_f1": 0.7815079316671453
+    }
+  ],
+  "winner": "LogisticRegression"
+}

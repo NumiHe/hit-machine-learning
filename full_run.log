@@ -1,0 +1,266 @@
+
+==============================================================================
+1. LOAD & CLEAN
+==============================================================================
+Raw shape: (17880, 18)
+
+Missing values per column:
+salary_range           15012
+department             11547
+required_education      8105
+benefits                7212
+required_experience     7050
+function                6455
+industry                4903
+employment_type         3471
+company_profile         3308
+requirements            2696
+location                 346
+description                1
+title                      0
+job_id                     0
+telecommuting              0
+has_questions              0
+has_company_logo           0
+fraudulent                 0
+
+Cleaned shape: (17880, 21)  (job_id dropped)
+Class balance: 17014 real / 866 fake (4.84% fraudulent)  ->  imbalanced
+
+First 5 cleaned rows:
+   text_len  word_count  n_missing_fields country  fraudulent
+0      2661         382                 2      US           0
+1      6126         901                 1      NZ           0
+2      2638         359                 3      US           0
+3      5458         709                 1      US           0
+4      3863         470                 2      US           0
+
+==============================================================================
+3. STRATIFIED 80/20 SPLIT
+==============================================================================
+train: 14,304 rows, 4.84% fraudulent
+test : 3,576 rows, 4.84% fraudulent
+(stratify=y keeps the positive rate identical in both halves)
+
+First 5 TRAIN rows:
+       text_len  n_missing_fields employment_type country
+7530       3906                 2       Full-time      US
+129        4060                 3       Full-time      US
+4640       3272                 3       Full-time      NZ
+402        3178                 2       Full-time      US
+13218      4119                 1       Full-time      US
+
+First 5 TEST rows:
+       text_len  n_missing_fields employment_type country
+16995      1685                 5       Full-time      US
+9357       2831                 2       Full-time      US
+11561      3039                 2        Contract      AU
+1105       5688                 1       Full-time      ZA
+1980       3303                 2       Full-time      US
+
+==============================================================================
+4. GRID SEARCH + 5-FOLD CV -- LogisticRegression
+==============================================================================
+Grid: {'clf__C': [0.01, 0.1, 1, 10, 100], 'clf__class_weight': [None, 'balanced']}
+10 combinations x 5 folds = 50 fits
+Fitting 5 folds for each of 10 candidates, totalling 50 fits
+
+All permutations, mean CV F1 over 5 folds (237.4s):
+ param_clf__C param_clf__class_weight  mean_test_score  std_test_score  rank_test_score
+       100.00                balanced         0.857094        0.007749                1
+       100.00                     NaN         0.845885        0.023635                2
+        10.00                balanced         0.839676        0.015326                3
+        10.00                     NaN         0.819443        0.023199                4
+         1.00                balanced         0.717111        0.020053                5
+         1.00                     NaN         0.708908        0.014479                6
+         0.10                balanced         0.485878        0.012467                7
+         0.10                     NaN         0.383959        0.047333                8
+         0.01                balanced         0.363354        0.019909                9
+         0.01                     NaN         0.084557        0.027549               10
+
+BEST: {'clf__C': 100, 'clf__class_weight': 'balanced'}   mean CV F1 = 0.8571
+
+==============================================================================
+FEATURE ENGINEERING TRACE -- 3 examples from TRAIN
+==============================================================================
+
+--- example 0 ---
+  raw combined_text[:160]: 'Contact Center Representatives Tidewater Finance Co. was established in 1992 for the initial purpose of purchasing, and servicing retail installment contracts. '
+  meta: text_len=3906, word_count=526, n_missing_fields=2
+  cat : employment_type='Full-time', country='US'
+  -> vector length 50211 (50000 tf-idf + 13 meta + 198 one-hot)
+  -> top tf-idf terms: tidewater=0.120, tidewater finance=0.093, experience collections=0.092, vacation hours=0.090, equivalent customer=0.088, saturdays scheduled=0.088, months employment=0.088, environment equivalent=0.087
+
+--- example 1 ---
+  raw combined_text[:160]: 'Customer Service Associate Novitex Enterprise Solutions, formerly Pitney Bowes Management Services, delivers innovative document and communications management s'
+  meta: text_len=4060, word_count=527, n_missing_fields=3
+  cat : employment_type='Full-time', country='US'
+  -> vector length 50211 (50000 tf-idf + 13 meta + 198 one-hot)
+  -> top tf-idf terms: audio visual=0.183, conference rooms=0.142, audio=0.137, conference=0.121, rooms=0.116, designated=0.115, equipment=0.100, visual=0.099
+
+--- example 2 ---
+  raw combined_text[:160]: 'Automated Test Analyst SilverStripe CMS &amp; Framework is an open source platform of web development tools. The platform is curated by SilverStripe, an interna'
+  meta: text_len=3272, word_count=507, n_missing_fields=3
+  cat : employment_type='Full-time', country='NZ'
+  -> vector length 50211 (50000 tf-idf + 13 meta + 198 one-hot)
+  -> top tf-idf terms: silverstripe=0.168, test analyst=0.130, cms=0.086, ass=0.084, zealand=0.084, new zealand=0.084, test=0.075, open source=0.072
+
+==============================================================================
+FEATURE ENGINEERING TRACE -- 3 examples from TEST
+==============================================================================
+
+--- example 0 ---
+  raw combined_text[:160]: 'EXCELLENT ER RN Opportunity Available Now  Our client, located in Urban, IL, is looking for an ER RN to become a member of their team ASAP!Our client is an inst'
+  meta: text_len=1685, word_count=241, n_missing_fields=5
+  cat : employment_type='Full-time', country='US'
+  -> vector length 50211 (50000 tf-idf + 13 meta + 198 one-hot)
+  -> top tf-idf terms: rn=0.237, ed=0.195, er=0.177, miles=0.175, enhanced=0.174, relocation=0.124, time hours=0.119, electronic medical=0.119
+
+--- example 1 ---
+  raw combined_text[:160]: 'Scrum Master / Website Development Project Manager 352 Inc. is a full-service digital agency creating websites, software and marketing campaigns. We partner wit'
+  meta: text_len=2831, word_count=415, n_missing_fields=2
+  cat : employment_type='Full-time', country='US'
+  -> vector length 50211 (50000 tf-idf + 13 meta + 198 one-hot)
+  -> top tf-idf terms: scrum master=0.212, scrum=0.175, smart solutions=0.170, agile scrum=0.151, master=0.127, design software=0.127, strong understanding=0.106, development team=0.105
+
+--- example 2 ---
+  raw combined_text[:160]: "HR Assistant - Contract Squiz is one of the world's leading web solutions companies. We design, build and manage engaging websites and online applications using"
+  meta: text_len=3039, word_count=446, n_missing_fields=2
+  cat : employment_type='Contract', country='AU'
+  -> vector length 50211 (50000 tf-idf + 13 meta + 198 one-hot)
+  -> top tf-idf terms: squiz=0.188, job boards=0.134, boards=0.111, hr=0.089, hr assistant=0.085, high level=0.084, amp culture=0.082, administration duties=0.080
+
+==============================================================================
+5. TEST-SET EVALUATION -- LogisticRegression
+==============================================================================
+Metrics for the FRAUDULENT (positive) class:
+  precision = 0.9133
+  recall    = 0.9133
+  F1        = 0.9133
+  (support: ROC-AUC = 0.9940, PR-AUC = 0.9668)
+
+Full classification report:
+              precision    recall  f1-score   support
+
+    real (0)     0.9956    0.9956    0.9956      3403
+    fake (1)     0.9133    0.9133    0.9133       173
+
+    accuracy                         0.9916      3576
+   macro avg     0.9544    0.9544    0.9544      3576
+weighted avg     0.9916    0.9916    0.9916      3576
+
+Confusion matrix (rows = actual, cols = predicted):
+             pred real  pred fake
+actual real       3388         15
+actual fake         15        158
+
+==============================================================================
+SAMPLE PREDICTIONS -- LogisticRegression
+==============================================================================
+First 5 rows of the test set:
+                                                  text_snippet  actual  predicted  P(fake)  correct
+16995  EXCELLENT ER RN Opportunity Available Now  Our client,        0          0   0.0137     True
+9357   Scrum Master / Website Development Project Manager 352        0          0   0.0005     True
+11561  HR Assistant - Contract Squiz is one of the world's lea       0          0   0.0006     True
+1105   Regional Sales Director South Africa Upstream’s mission       0          0   0.0000     True
+1980   Petrophysicist Valor Services provides Workforce Soluti       0          0   0.0000     True
+
+True positives (caught fakes):
+                                                  text_snippet  actual  predicted  P(fake)  correct
+7830   Position Finance Assistant  We have positions available       1          1   0.9905     True
+17670  Customer Service Agent  We are seeking individuals to b       1          1   0.9997     True
+5513   Payroll Data Coordinator Positions - Earn $100-$200 Dai       1          1   0.9999     True
+
+False positives (real flagged as fake):
+                                                 text_snippet  actual  predicted  P(fake)  correct
+6248  Sales Representative  Contact info: Ignacio Crivaro #EM       0          1   0.8849    False
+7237  Sales Consultant  I am looking for a few women to join        0          1   0.6717    False
+8280  Hotel entertainer  We are looking for Hotel etertainers       0          1   0.5321    False
+
+False negatives (fakes that slipped through):
+                                                  text_snippet  actual  predicted  P(fake)  correct
+17648  Vemma Brand Partner  Looking for motivated and hard wor       1          0   0.0504    False
+17598  Real Estate & Insurance Professionals Elite Realty Serv       1          0   0.2003    False
+16862  Document Control Specialist Maynard Consulting Company        1          0   0.4363    False
+
+==============================================================================
+4. GRID SEARCH + 5-FOLD CV -- RandomForest
+==============================================================================
+Grid: {'clf__n_estimators': [100, 300, 500], 'clf__max_depth': [None, 20, 50]}
+9 combinations x 5 folds = 45 fits
+Fitting 5 folds for each of 9 candidates, totalling 45 fits
+
+All permutations, mean CV F1 over 5 folds (506.7s):
+param_clf__max_depth  param_clf__n_estimators  mean_test_score  std_test_score  rank_test_score
+                None                      500         0.781508        0.031125                1
+                None                      300         0.776957        0.028276                2
+                None                      100         0.772596        0.030978                3
+                  50                      100         0.728019        0.030405                4
+                  50                      300         0.727969        0.030553                5
+                  50                      500         0.725674        0.029968                6
+                  20                      100         0.559029        0.049084                7
+                  20                      500         0.557820        0.044972                8
+                  20                      300         0.550430        0.042298                9
+
+BEST: {'clf__max_depth': None, 'clf__n_estimators': 500}   mean CV F1 = 0.7815
+
+==============================================================================
+5. TEST-SET EVALUATION -- RandomForest
+==============================================================================
+Metrics for the FRAUDULENT (positive) class:
+  precision = 1.0000
+  recall    = 0.6647
+  F1        = 0.7986
+  (support: ROC-AUC = 0.9952, PR-AUC = 0.9527)
+
+Full classification report:
+              precision    recall  f1-score   support
+
+    real (0)     0.9832    1.0000    0.9916      3403
+    fake (1)     1.0000    0.6647    0.7986       173
+
+    accuracy                         0.9838      3576
+   macro avg     0.9916    0.8324    0.8951      3576
+weighted avg     0.9841    0.9838    0.9822      3576
+
+Confusion matrix (rows = actual, cols = predicted):
+             pred real  pred fake
+actual real       3403          0
+actual fake         58        115
+
+==============================================================================
+SAMPLE PREDICTIONS -- RandomForest
+==============================================================================
+First 5 rows of the test set:
+                                                  text_snippet  actual  predicted  P(fake)  correct
+16995  EXCELLENT ER RN Opportunity Available Now  Our client,        0          0    0.100     True
+9357   Scrum Master / Website Development Project Manager 352        0          0    0.004     True
+11561  HR Assistant - Contract Squiz is one of the world's lea       0          0    0.002     True
+1105   Regional Sales Director South Africa Upstream’s mission       0          0    0.004     True
+1980   Petrophysicist Valor Services provides Workforce Soluti       0          0    0.022     True
+
+True positives (caught fakes):
+                                                  text_snippet  actual  predicted  P(fake)  correct
+17670  Customer Service Agent  We are seeking individuals to b       1          1    0.998     True
+5513   Payroll Data Coordinator Positions - Earn $100-$200 Dai       1          1    1.000     True
+6056   Payroll Data Entry Clerk Position - Earn $100-$200 Dail       1          1    0.984     True
+
+False positives (real flagged as fake):
+  (none)
+
+False negatives (fakes that slipped through):
+                                                  text_snippet  actual  predicted  P(fake)  correct
+7830   Position Finance Assistant  We have positions available       1          0    0.314    False
+17648  Vemma Brand Partner  Looking for motivated and hard wor       1          0    0.214    False
+17604  Subsea Installation Engineer  Job Description: Candidat       1          0    0.288    False
+
+==============================================================================
+MODEL COMPARISON (fraudulent class)
+==============================================================================
+             model                                            best_params  cv_f1_mean  test_precision  test_recall  test_f1  test_roc_auc  test_pr_auc
+LogisticRegression     {'clf__C': '100', 'clf__class_weight': 'balanced'}      0.8571          0.9133       0.9133   0.9133        0.9940       0.9668
+      RandomForest {'clf__max_depth': 'None', 'clf__n_estimators': '500'}      0.7815          1.0000       0.6647   0.7986        0.9952       0.9527
+
+Winner on test F1: LogisticRegression
+
+Artifacts written to C:\hit\results

@@ -1,0 +1,3 @@
+model,best_params,cv_f1_mean,test_precision,test_recall,test_f1,test_roc_auc,test_pr_auc
+LogisticRegression,"{'clf__C': '100', 'clf__class_weight': 'balanced'}",0.8571,0.9133,0.9133,0.9133,0.994,0.9668
+RandomForest,"{'clf__max_depth': 'None', 'clf__n_estimators': '500'}",0.7815,1.0,0.6647,0.7986,0.9952,0.9527
